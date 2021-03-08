@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html charset="utf-8">
+
+<head>
+    <meta charset="utf-8"/>
+    <title>Результаты кластеризации</title>
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script>
+        'use strict'
+        document.addEventListener("DOMContentLoaded", () => {
+                    getData()
+                        .then(function (data) {
+                            const Result = data;
+
+                            function outputData() {
+                                /* Функция формирует данные для графика */
+                                let data = [],
+                                    d = 0;
+                                Result.forEach((row, i) => {
+                                    if (i == 0) {
+                                        row.forEach((item, a) => {
+                                            if (a == 0) {
+                                                console.log(data);
+                                                data.push([item]);
+                                            } else if (a == 1) {
+                                                data[d].push(item);
+                                                d++;
+                                            };
+                                        });
+                                    } else if (row[0] !== "") {
+                                        row.forEach((item, b) => {
+                                            if (b == 0) {
+                                                data.push([item]);
+                                            } else if (b == 1) {
+                                                if (isNaN(parseInt(item)) || item === "") {
+                                                    data[d].push(0);
+                                                } else {
+                                                    data[d].push(item);
+                                                }
+                                                d++;
+                                            }
+                                        });
+                                    }
+                                });
+                                console.log(data);
+                                return data
+                            };
+
+                            Chart();
+
+                            function Chart() {
+                                /* Функция вывода графика */
+                                google.charts.load('current', {
+                                    'packages': ['corechart']
+                                });
+                                google.charts.setOnLoadCallback(drawChart);
+
+
+                                function drawChart() {
+
+                                    var data = google.visualization.arrayToDataTable(outputData());
+
+                                    var options = {
+                                        title: 'Количество курсов по темам',
+                                        'pieHole': 0.2,
+                                        'is3D': true,
+                                    };
+
+                                    var chart = new google.visualization.PieChart(document.getElementById(
+                                        'piechart'));
+
+                                    chart.draw(data, options);
+
+
+                                    google.charts.load('current', {
+                                        'packages': ['table']
+                                    });
+
+                                    google.charts.setOnLoadCallback(drawTable);
+
+                                    function drawTable() {
+                                        var data = google.visualization.arrayToDataTable(outputData());
+
+
+                                        var table = new google.visualization.Table(document.getElementById(
+                                        'table'));
+                                        var cssClassNames = {
+                                            'headerRow': 'italic-darkblue-font large-font bold-font',
+                                            'tableRow': '',
+                                            'oddTableRow': 'beige-background',
+                                            'selectedTableRow': 'orange-background large-font',
+                                            'hoverTableRow': '',
+                                            'headerCell': 'gold-border',
+                                            'tableCell': '',
+                                            'rowNumberCell': 'underline-blue-font'
+                                        };
+
+                                        table.draw(data, {
+                                            showRowNumber: false,
+                                            width: '579px',
+                                            height: 'auto',
+                                            'cssClassNames': cssClassNames
+                                        });
+                                    }
+                                }
+                            };
+
+                        }).catch(function (err) {
+                            console.error(err);
+                            document.getElementById('piechart').innerHTML = 'Ошибка. Нет данных.';
+                        });
+                });
+
+                function getData() {
+                   /* Функция делает запрос данных JSON и возвращает массив или ошибку*/
+                   return new Promise(function (resolve, reject) {
+                       let app = "https://script.googleusercontent.com/macros/echo?user_content_key=zJ7o-v-IIEgU8pMSqaJRMeEWHTD8L5I1Y6uOgNGiUj04f2N4qXwj_d8YvSUdaG0VlzBM2TnIp5exw_zdiMs1L5wJcolLqovum5_BxDlH2jW0nuo2oDemN9CCS2h10ox_1xSncGQajx_ryfhECjZEnEgC3ZDibc9dcVp-drlHAMcOC2MzBwI3R00NsLNWTUrrD1IWj4Di9NFNU8BrR-y0ogDKZlP4kIcB&lib=MqPzugCYBIoe7BQ7EfH9cyv5MatRf3lM9",
+                           // ========= выше в "" вставить ссылку на приложение Google App Scripts ========
+                           data = [],
+                           xhr = new XMLHttpRequest();
+                       xhr.open('GET', app);
+                       xhr.onreadystatechange = function () {
+                           if (xhr.readyState === 4) {
+                               if (xhr.status == 200 && xhr.status < 400) {
+                                   let r = JSON.parse(xhr.responseText);
+                                   data = r["result"];
+                                   resolve(data);
+                               } else {
+                                   reject(new Error('Error'));
+                               };
+                           };
+                       }
+                       xhr.send();
+                   });
+                };
+    </script>
+
+    <style>
+        #table {
+            text-align: center;
+        }
+
+        .google-visualization-table-table {
+            border: solid #eee;
+            border-width: 1px 0 0 1px;
+        }
+
+        tr,
+        td,
+        th {
+            height: 20px;
+        }
+
+        td,
+        th {
+            padding: 5px 5px !important;
+        }
+
+        .orange-background {
+            background-color: #a384d2 !important;
+        }
+
+        .orchid-background {
+            background-color: orchid !important;
+        }
+
+        .beige-background {
+            background-color: beige;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="piechart" style="width: 900px; height: 500px;"></div>
+    <div id="table" style="width: 900px;"></div>
+</body>
+
+</html>
